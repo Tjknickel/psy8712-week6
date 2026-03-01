@@ -2,8 +2,7 @@
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 library(stringi)
 library(tidyverse)
-# library()
-# library()
+
 
 # Data Import 
 citations <- stri_read_lines(con = "../data/cites.txt")
@@ -20,7 +19,7 @@ citations_tbl <- tibble(line = 1:length(citations_txt), cite = citations_txt) %>
            title = str_extract(cite, "(?<=\\)\\.\\s)[^.(]+"),
            journal_title = str_extract(cite, "(?<=\\.\\s)[^.,]+(?=,\\s[0-9])"),
            book_title = str_extract(cite, "(?<=In\\s[^,]{1,50},\\s)[^\\(]+|(?<=\\d{4}\\)\\.\\s)[^.(]+(?=\\.\\s[^0-9]+:)"), 
-           journal_page_start = str_extract(cite, "(?<=[,:]\\s)[0-9]+(?=[–-])"), #(?<=,\\s)[0-9]+(?=[–-])
+           journal_page_start = str_extract(cite, "(?<=[,:]\\s)[0-9]+(?=[–-])"), 
            journal_page_end = str_extract(cite, "(?<=[–-])[0-9]+(?=\\.)"),
            book_page_start = str_extract(cite, "(?<=pp\\.\\s)[0-9]+(?=-)"),
            book_page_end = str_extract(cite, "(?<=[–-])[0-9]+(?=\\))"),
@@ -29,3 +28,24 @@ citations_tbl <- tibble(line = 1:length(citations_txt), cite = citations_txt) %>
   mutate(first_author = str_extract(authors, "^[^&,]+,\\s[A-Z]\\.(?:\\s[A-Z]\\.)?"))
 
 # Analysis
+citations_tbl %>%
+  summarize(cites = n(),
+            first_authors = sum(!is.na(first_author)),
+            articles = sum(!is.na(journal_title)),
+            chapter = sum(!is.na(book_title)))
+
+
+
+
+
+citations_tbl %>%
+  filter(perf_ref == TRUE, !is.na(journal_title)) %>%
+  count(journal_title, name = "frequency", sort = TRUE) %>%
+  rename(journal_name = journal_title) %>%
+  head(10)
+
+
+citations_tbl %>%
+  count(cite, name = "frequency", sort = TRUE) %>%
+  rename(citation = cite) %>%
+  head(10)
